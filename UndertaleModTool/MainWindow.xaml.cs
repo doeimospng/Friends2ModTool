@@ -1940,10 +1940,10 @@ namespace UndertaleModTool
                 UndertaleResource obj = Activator.CreateInstance(t) as UndertaleResource;
                 string newName = obj.GetType().Name.Replace("Undertale", "").Replace("GameObject", "Object").ToLower() + list.Count;
                 (obj as UndertaleNamedResource).Name = Data.Strings.MakeString(newName);
-                list.Add(SavedDeletedObject);
+                list.Add(obj);
                 UpdateTree();
-                HighlightObject(SavedDeletedObject);
-                OpenInTab(SavedDeletedObject, true);
+                HighlightObject(obj);
+                OpenInTab(obj, true);
             }
 
         }
