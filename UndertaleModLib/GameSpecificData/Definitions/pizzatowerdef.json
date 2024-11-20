@@ -1,0 +1,14 @@
+{
+    "LoadOrder": 1,
+    "Conditions": [
+      {
+        "ConditionKind": "DisplayName.Regex",
+        "Value": "(?i)^Pizza Tower"
+      },
+      {
+        "ConditionKind": "DisplayName.Regex",
+        "Value": "(?i)^PizzaTower_GM2"
+      }
+    ],
+    "UnderanalyzerFilename": "pizzatower.json"
+  }

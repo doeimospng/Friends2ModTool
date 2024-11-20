@@ -10,7 +10,7 @@ namespace UndertaleModToolUpdater
     {
         static void Main(string[] args)
         {
-            Console.Title = "UndertaleModTool updater";
+            Console.Title = "Friends2ModTool updater";
 
             // Get all processes named UndertaleModTool
             Process[] utmtInstances = Process.GetProcessesByName("UndertaleModTool");
