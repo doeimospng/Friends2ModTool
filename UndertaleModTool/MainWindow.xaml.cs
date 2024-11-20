@@ -1934,6 +1934,8 @@ namespace UndertaleModTool
                     ScriptError("An error occurred while trying to add the menu item. No action has been taken.\r\n\r\nError:\r\n\r\n" + ex.ToString());
                     return;
                 }
+                string notDataNewName = "supercoolobjectwow";
+                (obj as UndertaleNamedResource).Name = new UndertaleString(notDataNewName); // not Data.MakeString!
                 IList list = ((source as ICollectionView)?.SourceCollection as IList) ?? (source as IList);
                 list.Add(SavedDeletedObject);
                 UpdateTree();
