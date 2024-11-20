@@ -1937,9 +1937,9 @@ namespace UndertaleModTool
                 IList list = ((source as ICollectionView)?.SourceCollection as IList) ?? (source as IList);
                 Type t = list.GetType().GetGenericArguments()[0];
                 Debug.Assert(typeof(UndertaleResource).IsAssignableFrom(t));
-                string notDataNewName = "supercoolobjectwow";
                 UndertaleResource obj = Activator.CreateInstance(t) as UndertaleResource;
-                (obj as UndertaleNamedResource).Name = new UndertaleString(notDataNewName); // not Data.MakeString!
+                string newName = obj.GetType().Name.Replace("Undertale", "").Replace("GameObject", "Object").ToLower() + list.Count;
+                (obj as UndertaleNamedResource).Name = Data.Strings.MakeString(newName);
                 list.Add(SavedDeletedObject);
                 UpdateTree();
                 HighlightObject(SavedDeletedObject);
