@@ -2026,26 +2026,7 @@ namespace UndertaleModTool
             }
             else if (e.Key == Key.N && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
-                object source;
-                try
-                {
-                    source = (MainTree.SelectedItem as TreeViewItem).ItemsSource;
-                }
-                catch (Exception ex)
-                {
-                    Application.Current.MainWindow.ShowError("An error occurred while trying to add the menu item. No action has been taken.\r\n\r\nError:\r\n\r\n" + ex.ToString());
-                    return;
-                }
-                IList list = ((source as ICollectionView)?.SourceCollection as IList) ?? (source as IList);
-                Type t = list.GetType().GetGenericArguments()[0];
-                Debug.Assert(typeof(UndertaleResource).IsAssignableFrom(t));
-                UndertaleResource obj = Activator.CreateInstance(t) as UndertaleResource;
-                string newName = obj.GetType().Name.Replace("Undertale", "").Replace("GameObject", "Object").ToLower() + list.Count;
-                (obj as UndertaleNamedResource).Name = Data.Strings.MakeString(newName);
-                list.Add(obj);
-                UpdateTree();
-                HighlightObject(obj);
-                OpenInTab(obj, true);
+                MakeNewItem()
             }
 
         }
