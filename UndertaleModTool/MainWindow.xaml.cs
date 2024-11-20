@@ -1940,7 +1940,6 @@ namespace UndertaleModTool
                 string notDataNewName = "supercoolobjectwow";
                 UndertaleResource obj = Activator.CreateInstance(t) as UndertaleResource;
                 (obj as UndertaleNamedResource).Name = new UndertaleString(notDataNewName); // not Data.MakeString!
-                IList list = ((source as ICollectionView)?.SourceCollection as IList) ?? (source as IList);
                 list.Add(SavedDeletedObject);
                 UpdateTree();
                 HighlightObject(SavedDeletedObject);
