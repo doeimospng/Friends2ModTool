@@ -1827,7 +1827,6 @@ namespace UndertaleModTool
             bool isLast = list.IndexOf(obj) == list.Count - 1;
             if (this.ShowQuestion("Delete " + obj + "?" + (!isLast ? "\n\nNote that the code often references objects by ID, so this operation is likely to break stuff because other items will shift up!" : ""), isLast ? MessageBoxImage.Question : MessageBoxImage.Warning, "Confirmation" ) == MessageBoxResult.Yes)
             {
-                object SavedDeletedObject = obj;
                 list.Remove(obj);
                 if (obj is UndertaleCode codeObj)
                 {
@@ -1911,6 +1910,109 @@ namespace UndertaleModTool
                 this.ShowWarning("Item name is null.");
         }
 
+        private void MakeNewItem()
+        {
+            object source;
+            try
+            {
+                source = (MainTree.SelectedItem as TreeViewItem).ItemsSource;
+            }
+            catch (Exception ex)
+            {
+                Application.Current.MainWindow.ShowError("An error occurred while trying to add the menu item. No action has been taken.\r\n\r\nError:\r\n\r\n" + ex.ToString());
+                return;
+            }
+            IList list = ((source as ICollectionView)?.SourceCollection as IList) ?? (source as IList);
+            Type t = list.GetType().GetGenericArguments()[0];
+            Debug.Assert(typeof(UndertaleResource).IsAssignableFrom(t));
+            UndertaleResource obj = Activator.CreateInstance(t) as UndertaleResource;
+            if (obj is UndertaleNamedResource)
+            {
+                bool doMakeString = obj is not (UndertaleTexturePageItem or UndertaleEmbeddedAudio or UndertaleEmbeddedTexture);
+                string notDataNewName = null;
+                if (obj is UndertaleTexturePageItem)
+                {
+                    notDataNewName = "PageItem " + list.Count;
+                }
+                if ((obj is UndertaleExtension) && (IsExtProductIDEligible == Visibility.Visible))
+                {
+                    var newProductID = new byte[] { 0xBA, 0x5E, 0xBA, 0x11, 0xBA, 0xDD, 0x06, 0x60, 0xBE, 0xEF, 0xED, 0xBA, 0x0B, 0xAB, 0xBA, 0xBE };
+                    Data.FORM.EXTN.productIdData.Add(newProductID);
+                }
+                if (obj is UndertaleEmbeddedAudio)
+                {
+                    notDataNewName = "EmbeddedSound " + list.Count;
+                }
+                if (obj is UndertaleEmbeddedTexture)
+                {
+                    notDataNewName = "Texture " + list.Count;
+                }
+                if (obj is UndertaleShader shader)
+                {
+                    shader.GLSL_ES_Vertex = Data.Strings.MakeString("", true);
+                    shader.GLSL_ES_Fragment = Data.Strings.MakeString("", true);
+                    shader.GLSL_Vertex = Data.Strings.MakeString("", true);
+                    shader.GLSL_Fragment = Data.Strings.MakeString("", true);
+                    shader.HLSL9_Vertex = Data.Strings.MakeString("", true);
+                    shader.HLSL9_Fragment = Data.Strings.MakeString("", true);
+                }
+
+                if (doMakeString)
+                {
+                    string newName = obj.GetType().Name.Replace("Undertale", "").Replace("GameObject", "Object").ToLower() + list.Count;
+                    (obj as UndertaleNamedResource).Name = Data.Strings.MakeString(newName);
+                    if (obj is UndertaleRoom)
+                    {
+                        (obj as UndertaleRoom).Caption = Data.Strings.MakeString("");
+
+                        if (IsGMS2 == Visibility.Visible)
+                            (obj as UndertaleRoom).Flags |= UndertaleRoom.RoomEntryFlags.IsGMS2;
+                    }
+
+                    if (obj is UndertaleScript)
+                    {
+                        UndertaleCode code = new UndertaleCode();
+                        string prefix = Data.IsVersionAtLeast(2, 3) ? "gml_GlobalScript_" : "gml_Script_";
+                        code.Name = Data.Strings.MakeString(prefix + newName);
+                        Data.Code.Add(code);
+                        if (Data?.GeneralInfo.BytecodeVersion > 14)
+                        {
+                            UndertaleCodeLocals locals = new UndertaleCodeLocals();
+                            locals.Name = code.Name;
+                            UndertaleCodeLocals.LocalVar argsLocal = new UndertaleCodeLocals.LocalVar();
+                            argsLocal.Name = Data.Strings.MakeString("arguments");
+                            argsLocal.Index = 0;
+                            locals.Locals.Add(argsLocal);
+                            code.LocalsCount = 1;
+                            Data.CodeLocals.Add(locals);
+                        }
+                        (obj as UndertaleScript).Code = code;
+                    }
+                    if ((obj is UndertaleCode) && (Data.GeneralInfo.BytecodeVersion > 14))
+                    {
+                        UndertaleCodeLocals locals = new UndertaleCodeLocals();
+                        locals.Name = (obj as UndertaleCode).Name;
+                        UndertaleCodeLocals.LocalVar argsLocal = new UndertaleCodeLocals.LocalVar();
+                        argsLocal.Name = Data.Strings.MakeString("arguments");
+                        argsLocal.Index = 0;
+                        locals.Locals.Add(argsLocal);
+                        (obj as UndertaleCode).LocalsCount = 1;
+                        Data.CodeLocals.Add(locals);
+                    }
+                }
+                else
+                {
+                    (obj as UndertaleNamedResource).Name = new UndertaleString(notDataNewName); // not Data.MakeString!
+                }
+            }
+            else if (obj is UndertaleString str)
+                str.Content = "string" + list.Count;
+            list.Add(obj);
+            UpdateTree();
+            HighlightObject(obj);
+            OpenInTab(obj, true);
+        }
+
         private void MainTree_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Delete)
@@ -1922,7 +2024,7 @@ namespace UndertaleModTool
             {
                 CopyItemName(Highlighted);
             }
-            else if (e.Key == Key.Z && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            else if (e.Key == Key.N && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
                 object source;
                 try
@@ -1931,7 +2033,7 @@ namespace UndertaleModTool
                 }
                 catch (Exception ex)
                 {
-                    ScriptError("An error occurred while trying to add the menu item. No action has been taken.\r\n\r\nError:\r\n\r\n" + ex.ToString());
+                    Application.Current.MainWindow.ShowError("An error occurred while trying to add the menu item. No action has been taken.\r\n\r\nError:\r\n\r\n" + ex.ToString());
                     return;
                 }
                 IList list = ((source as ICollectionView)?.SourceCollection as IList) ?? (source as IList);
@@ -2090,105 +2192,7 @@ namespace UndertaleModTool
 
         private void MenuItem_Add_Click(object sender, RoutedEventArgs e)
         {
-            object source;
-            try
-            {
-                source = (MainTree.SelectedItem as TreeViewItem).ItemsSource;
-            }
-            catch (Exception ex)
-            {
-                ScriptError("An error occurred while trying to add the menu item. No action has been taken.\r\n\r\nError:\r\n\r\n" + ex.ToString());
-                return;
-            }
-            IList list = ((source as ICollectionView)?.SourceCollection as IList) ?? (source as IList);
-            Type t = list.GetType().GetGenericArguments()[0];
-            Debug.Assert(typeof(UndertaleResource).IsAssignableFrom(t));
-            UndertaleResource obj = Activator.CreateInstance(t) as UndertaleResource;
-            if (obj is UndertaleNamedResource)
-            {
-                bool doMakeString = obj is not (UndertaleTexturePageItem or UndertaleEmbeddedAudio or UndertaleEmbeddedTexture);
-                string notDataNewName = null;
-                if (obj is UndertaleTexturePageItem)
-                {
-                    notDataNewName = "PageItem " + list.Count;
-                }
-                if ((obj is UndertaleExtension) && (IsExtProductIDEligible == Visibility.Visible))
-                {
-                    var newProductID = new byte[] { 0xBA, 0x5E, 0xBA, 0x11, 0xBA, 0xDD, 0x06, 0x60, 0xBE, 0xEF, 0xED, 0xBA, 0x0B, 0xAB, 0xBA, 0xBE };
-                    Data.FORM.EXTN.productIdData.Add(newProductID);
-                }
-                if (obj is UndertaleEmbeddedAudio)
-                {
-                    notDataNewName = "EmbeddedSound " + list.Count;
-                }
-                if (obj is UndertaleEmbeddedTexture)
-                {
-                    notDataNewName = "Texture " + list.Count;
-                }
-                if (obj is UndertaleShader shader)
-                {
-                    shader.GLSL_ES_Vertex = Data.Strings.MakeString("", true);
-                    shader.GLSL_ES_Fragment = Data.Strings.MakeString("", true);
-                    shader.GLSL_Vertex = Data.Strings.MakeString("", true);
-                    shader.GLSL_Fragment = Data.Strings.MakeString("", true);
-                    shader.HLSL9_Vertex = Data.Strings.MakeString("", true);
-                    shader.HLSL9_Fragment = Data.Strings.MakeString("", true);
-                }
-
-                if (doMakeString)
-                {
-                    string newName = obj.GetType().Name.Replace("Undertale", "").Replace("GameObject", "Object").ToLower() + list.Count;
-                    (obj as UndertaleNamedResource).Name = Data.Strings.MakeString(newName);
-                    if (obj is UndertaleRoom)
-                    {
-                        (obj as UndertaleRoom).Caption = Data.Strings.MakeString("");
-
-                        if (IsGMS2 == Visibility.Visible)
-                            (obj as UndertaleRoom).Flags |= UndertaleRoom.RoomEntryFlags.IsGMS2;
-                    }
-
-                    if (obj is UndertaleScript)
-                    {
-                        UndertaleCode code = new UndertaleCode();
-                        string prefix = Data.IsVersionAtLeast(2, 3) ? "gml_GlobalScript_" : "gml_Script_";
-                        code.Name = Data.Strings.MakeString(prefix + newName);
-                        Data.Code.Add(code);
-                        if (Data?.GeneralInfo.BytecodeVersion > 14)
-                        {
-                            UndertaleCodeLocals locals = new UndertaleCodeLocals();
-                            locals.Name = code.Name;
-                            UndertaleCodeLocals.LocalVar argsLocal = new UndertaleCodeLocals.LocalVar();
-                            argsLocal.Name = Data.Strings.MakeString("arguments");
-                            argsLocal.Index = 0;
-                            locals.Locals.Add(argsLocal);
-                            code.LocalsCount = 1;
-                            Data.CodeLocals.Add(locals);
-                        }
-                        (obj as UndertaleScript).Code = code;
-                    }
-                    if ((obj is UndertaleCode) && (Data.GeneralInfo.BytecodeVersion > 14))
-                    {
-                        UndertaleCodeLocals locals = new UndertaleCodeLocals();
-                        locals.Name = (obj as UndertaleCode).Name;
-                        UndertaleCodeLocals.LocalVar argsLocal = new UndertaleCodeLocals.LocalVar();
-                        argsLocal.Name = Data.Strings.MakeString("arguments");
-                        argsLocal.Index = 0;
-                        locals.Locals.Add(argsLocal);
-                        (obj as UndertaleCode).LocalsCount = 1;
-                        Data.CodeLocals.Add(locals);
-                    }
-                }
-                else
-                {
-                    (obj as UndertaleNamedResource).Name = new UndertaleString(notDataNewName); // not Data.MakeString!
-                }
-            }
-            else if (obj is UndertaleString str)
-                str.Content = "string" + list.Count;
-            list.Add(obj);
-            UpdateTree();
-            HighlightObject(obj);
-            OpenInTab(obj, true);
+            MakeNewItem()
         }
 
         private void RootMenuItem_SubmenuOpened(object sender, RoutedEventArgs e)
