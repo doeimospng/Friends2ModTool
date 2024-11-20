@@ -1924,6 +1924,17 @@ namespace UndertaleModTool
             }
             else if (e.Key == Key.Z && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
+                object source;
+                try
+                {
+                    source = (MainTree.SelectedItem as TreeViewItem).ItemsSource;
+                }
+                catch (Exception ex)
+                {
+                    ScriptError("An error occurred while trying to add the menu item. No action has been taken.\r\n\r\nError:\r\n\r\n" + ex.ToString());
+                    return;
+                }
+                IList list = ((source as ICollectionView)?.SourceCollection as IList) ?? (source as IList);
                 list.Add(SavedDeletedObject);
                 UpdateTree();
                 HighlightObject(SavedDeletedObject);
