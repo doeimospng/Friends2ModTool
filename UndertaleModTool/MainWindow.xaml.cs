@@ -230,10 +230,10 @@ namespace UndertaleModTool
             InitializeComponent();
             this.DataContext = this;
 
-            Highlighted = new DescriptionView("Welcome to UndertaleModTool!", "Open a data.win file to get started, then double click on the items on the left to view them.");
+            Highlighted = new DescriptionView("Welcome to Friends2ModTool!", "Open a data.win file to get started, then double click on the items on the left to view them.");
             OpenInTab(Highlighted);
 
-            TitleMain = "UndertaleModTool by krzys_h v:" + Version;
+            TitleMain = "Friends2ModTool v:" + Version;
 
             CanSave = false;
             CanSafelySave = false;
@@ -690,7 +690,7 @@ namespace UndertaleModTool
                                           ? "Tile sets"
                                           : "Backgrounds & Tile sets";
 
-            Highlighted = new DescriptionView("Welcome to UndertaleModTool!", "New file created, have fun making a game out of nothing\nI TOLD YOU to open a data.win, not create a new file! :P");
+            Highlighted = new DescriptionView("Welcome to Friends2ModTool!", "Just want to say something: I HATE the code McPig writes. Why the actual FUCK");
             OpenInTab(Highlighted);
 
             CanSave = true;
@@ -894,7 +894,7 @@ namespace UndertaleModTool
             Tabs.Clear();
             CurrentTab = null;
 
-            OpenInTab(new DescriptionView("Welcome to UndertaleModTool!",
+            OpenInTab(new DescriptionView("Welcome to Friends2ModTool!",
                                           "Open data.win file to get started, then double click on the items on the left to view them"));
             CurrentTab = Tabs[CurrentTabIndex];
 
@@ -3699,7 +3699,7 @@ result in loss of work.");
 
                     if (addDefaultTab)
                     {
-                        OpenInTab(new DescriptionView("Welcome to UndertaleModTool!",
+                        OpenInTab(new DescriptionView("Welcome to Friends2ModTool!",
                                                       "Open a data.win file to get started, then double click on the items on the left to view them"));
                         CurrentTab = Tabs[CurrentTabIndex];
 
