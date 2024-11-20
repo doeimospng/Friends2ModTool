@@ -114,7 +114,6 @@ namespace UndertaleModTool
         public string ScriptErrorMessage { get; set; } = "";
         public string ExePath { get; private set; } = Program.GetExecutableDirectory();
         public string ScriptErrorType { get; set; } = "";
-        public object SavedDeletedObject { get; set; }
 
         public enum SaveResult
         {
@@ -225,6 +224,8 @@ namespace UndertaleModTool
             { SystemColors.GrayTextBrushKey, new SolidColorBrush(Color.FromArgb(255, 136, 136, 136)) },
             { SystemColors.InactiveSelectionHighlightBrushKey, new SolidColorBrush(Color.FromArgb(255, 112, 112, 112)) }
         };
+
+        public object SavedDeletedObject { get; set; }
 
         public MainWindow()
         {
