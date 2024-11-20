@@ -292,7 +292,7 @@
         "create_noise_afterimage": [ null, null, "Asset.Sprite", null, null ],
         "create_red_afterimage": [ null, null, "Asset.Sprite", null, null ],
         "create_blur_afterimage": [ null, null, "Asset.Sprite", null, null ],
-        "instance_create_unique": [ null, null, "Id.Object" ],
+        "instance_create_unique": [ null, null, "Id.InstanceOrObject" ],
         "instance_nearest_random": [ "Id.InstanceOrObject", null ],
         "instance_random": [ "Id.InstanceOrObject" ],
         "add_rank_achievements": [ null, null, "Asset.Sprite", null, null ],
