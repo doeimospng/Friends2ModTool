@@ -114,6 +114,7 @@ namespace UndertaleModTool
         public string ScriptErrorMessage { get; set; } = "";
         public string ExePath { get; private set; } = Program.GetExecutableDirectory();
         public string ScriptErrorType { get; set; } = "";
+        public object SavedDeletedObject { get; set; }
 
         public enum SaveResult
         {
@@ -1826,6 +1827,7 @@ namespace UndertaleModTool
             bool isLast = list.IndexOf(obj) == list.Count - 1;
             if (this.ShowQuestion("Delete " + obj + "?" + (!isLast ? "\n\nNote that the code often references objects by ID, so this operation is likely to break stuff because other items will shift up!" : ""), isLast ? MessageBoxImage.Question : MessageBoxImage.Warning, "Confirmation" ) == MessageBoxResult.Yes)
             {
+                object SavedDeletedObject = obj
                 list.Remove(obj);
                 if (obj is UndertaleCode codeObj)
                 {
@@ -1916,6 +1918,18 @@ namespace UndertaleModTool
                 if (Highlighted is UndertaleObject obj)
                     DeleteItem(obj);
             }
+            else if (e.Key == Key.C && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            {
+                CopyItemName(Highlighted);
+            }
+            else if (e.Key == Key.Z && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            {
+                list.Add(SavedDeletedObject);
+                UpdateTree();
+                HighlightObject(SavedDeletedObject);
+                OpenInTab(SavedDeletedObject, true);
+            }
+
         }
 
         private async void CommandBox_PreviewKeyDown(object sender, KeyEventArgs e)
