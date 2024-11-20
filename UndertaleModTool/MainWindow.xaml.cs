@@ -1827,7 +1827,7 @@ namespace UndertaleModTool
             bool isLast = list.IndexOf(obj) == list.Count - 1;
             if (this.ShowQuestion("Delete " + obj + "?" + (!isLast ? "\n\nNote that the code often references objects by ID, so this operation is likely to break stuff because other items will shift up!" : ""), isLast ? MessageBoxImage.Question : MessageBoxImage.Warning, "Confirmation" ) == MessageBoxResult.Yes)
             {
-                object SavedDeletedObject = obj
+                object SavedDeletedObject = obj;
                 list.Remove(obj);
                 if (obj is UndertaleCode codeObj)
                 {
