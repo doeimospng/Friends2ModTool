@@ -86,6 +86,7 @@ namespace UndertaleModTool
         public int CurrentTabIndex { get; set; } = 0;
 
         public object Highlighted { get; set; }
+        public object SavedDeletedObject { get; set; }
         public object Selected
         {
             get => CurrentTab?.CurrentObject;
@@ -224,8 +225,6 @@ namespace UndertaleModTool
             { SystemColors.GrayTextBrushKey, new SolidColorBrush(Color.FromArgb(255, 136, 136, 136)) },
             { SystemColors.InactiveSelectionHighlightBrushKey, new SolidColorBrush(Color.FromArgb(255, 112, 112, 112)) }
         };
-
-        public object SavedDeletedObject { get; set; }
 
         public MainWindow()
         {
