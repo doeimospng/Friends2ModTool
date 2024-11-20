@@ -225,7 +225,7 @@ namespace UndertaleModTool
             { SystemColors.InactiveSelectionHighlightBrushKey, new SolidColorBrush(Color.FromArgb(255, 112, 112, 112)) }
         };
 
-        public object SavedDeletedObject { get; set; }
+        public object SavedDeletedObject { get; set; };
 
         public MainWindow()
         {
