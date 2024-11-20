@@ -2026,7 +2026,7 @@ namespace UndertaleModTool
             }
             else if (e.Key == Key.N && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
-                MakeNewItem()
+                MakeNewItem();
             }
 
         }
@@ -2173,7 +2173,7 @@ namespace UndertaleModTool
 
         private void MenuItem_Add_Click(object sender, RoutedEventArgs e)
         {
-            MakeNewItem()
+            MakeNewItem();
         }
 
         private void RootMenuItem_SubmenuOpened(object sender, RoutedEventArgs e)
