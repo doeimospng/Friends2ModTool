@@ -34,7 +34,7 @@
         <Resource Include="Resources\tabs_right_button.png" />
         <Resource Include="Resources\X.png" />
         <Resource Include="Resources\X_Down.png" />
-        <Resource Include="Resources\CascadiaCode.ttf" />
+        <Resource Include="Resources\CascadiaMono.ttf" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Underanalyzer\Underanalyzer\Underanalyzer.csproj" />
