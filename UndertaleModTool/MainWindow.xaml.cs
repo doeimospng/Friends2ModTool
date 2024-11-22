@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
-using System.Drawing;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -225,7 +224,7 @@ namespace UndertaleModTool
         public MainWindow()
         {
             InitializeComponent();
-            System.Windows.Forms.Application.SetDefaultFont(new Font("Futura Md BT", 9));
+            System.Windows.Forms.Application.SetDefaultFont(new System.Drawing.Font("Futura Md BT", 9));
             this.DataContext = this;
 
             Highlighted = new DescriptionView("Welcome to Friends2ModTool!", "Open a data.win file to get started, then double click on the items on the left to view them.");
