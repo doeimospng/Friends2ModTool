@@ -224,6 +224,7 @@ namespace UndertaleModTool
         public MainWindow()
         {
             InitializeComponent();
+            Application.SetDefaultFont(New Font(New FontFamily("Futura Md BT"), 9.0F))
             this.DataContext = this;
 
             Highlighted = new DescriptionView("Welcome to Friends2ModTool!", "Open a data.win file to get started, then double click on the items on the left to view them.");
