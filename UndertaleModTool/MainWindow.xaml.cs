@@ -174,6 +174,18 @@ namespace UndertaleModTool
             OnPropertyChanged("Selected");
         }
 
+        public void SetAllControlsFont(ControlCollection ctrls)
+        {
+            foreach(Control ctrl in ctrls)
+            {
+                if(ctrl.Controls != null)
+                    SetAllControlsFont(ctrl.Controls);
+
+                ctrl.Font = new System.Drawing.Font("Futura Md BT", 9);
+
+            }
+        }
+
         // For delivering messages to LoaderDialogs
         public delegate void FileMessageEventHandler(string message);
         public event FileMessageEventHandler FileMessageEvent;
@@ -225,6 +237,7 @@ namespace UndertaleModTool
         {
             InitializeComponent();
             System.Windows.Forms.Application.SetDefaultFont(new System.Drawing.Font("Futura Md BT", 9));
+            SetAllControlsFont(this.Controls);
             this.DataContext = this;
 
             Highlighted = new DescriptionView("Welcome to Friends2ModTool!", "Open a data.win file to get started, then double click on the items on the left to view them.");
