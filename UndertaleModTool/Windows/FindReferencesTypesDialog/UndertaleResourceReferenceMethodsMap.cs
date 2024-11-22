@@ -1498,42 +1498,39 @@ namespace UndertaleModTool.Windows
                 mainWindow.SetProgressBar(null, "Assets", 0, assets.Count);
                 mainWindow.StartProgressBarUpdater();
 
+                var assetsPart = Partitioner.Create(0, assets.Count);
+
                 List<Dictionary<string, List<object>>> dicts = new();
 
-                if (assets.Count > 0) // A Partitioner can't be created on an empty list.
+                await Task.Run(() =>
                 {
-                    var assetsPart = Partitioner.Create(0, assets.Count);
-
-                    await Task.Run(() =>
+                    Parallel.ForEach(assetsPart, (range) =>
                     {
-                        Parallel.ForEach(assetsPart, (range) =>
+                        var resultDict = new Dictionary<string, List<object>>();
+
+                        for (int i = range.Item1; i < range.Item2; i++)
                         {
-                            var resultDict = new Dictionary<string, List<object>>();
-
-                            for (int i = range.Item1; i < range.Item2; i++)
+                            var asset = assets[i];
+                            var assetReferences = GetReferencesOfObject(asset.Item1, data,
+                                                                        new HashSetTypesOverride(true, data.Code is null), true);
+                            if (assetReferences is null)
                             {
-                                var asset = assets[i];
-                                var assetReferences = GetReferencesOfObject(asset.Item1, data,
-                                                                            new HashSetTypesOverride(true, data.Code is null), true);
-                                if (assetReferences is null)
+                                if (resultDict.TryGetValue(asset.Item2, out var list))
                                 {
-                                    if (resultDict.TryGetValue(asset.Item2, out var list))
-                                    {
-                                        list.Add(asset.Item1);
-                                    }
-                                    else
-                                    {
-                                        resultDict[asset.Item2] = new() { asset.Item1 };
-                                    }
+                                    list.Add(asset.Item1);
                                 }
-
-                                mainWindow.IncrementProgressParallel();
+                                else
+                                {
+                                    resultDict[asset.Item2] = new() { asset.Item1 };
+                                }
                             }
 
-                            dicts.Add(resultDict);
-                        });
+                            mainWindow.IncrementProgressParallel();
+                        }
+
+                        dicts.Add(resultDict);
                     });
-                }
+                });
 
                 Dictionary<string, int> outArrSizes = new();
                 foreach (var dict in dicts)
