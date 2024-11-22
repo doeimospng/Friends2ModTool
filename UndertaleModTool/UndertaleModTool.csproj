@@ -34,6 +34,10 @@
         <Resource Include="Resources\tabs_right_button.png" />
         <Resource Include="Resources\X.png" />
         <Resource Include="Resources\X_Down.png" />
+        <Content Include="CascadiaCode.ttf">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        </Content>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Underanalyzer\Underanalyzer\Underanalyzer.csproj" />
