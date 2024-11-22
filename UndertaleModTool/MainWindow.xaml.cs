@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using System;
+using System.Drawing;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
