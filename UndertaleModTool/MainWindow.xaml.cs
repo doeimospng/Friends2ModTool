@@ -2135,7 +2135,7 @@ namespace UndertaleModTool
 
         private void MenuItem_Add_Click(object sender, RoutedEventArgs e)
         {
-            MakeNewItem()
+            MakeNewItem();
         }
 
         private void RootMenuItem_SubmenuOpened(object sender, RoutedEventArgs e)
