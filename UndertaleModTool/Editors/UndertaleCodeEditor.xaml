@@ -44,7 +44,7 @@
                 <Grid>
                     <avalonEdit:TextEditor
                         xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
-                        FontFamily="/resources/#Cascadia Code"
+                        FontFamily="/Resources/#Cascadia Code"
                         Name="DecompiledEditor"
                         IsReadOnly="True"
                         Background="#222222"
@@ -62,7 +62,7 @@
                 <Grid>
                     <avalonEdit:TextEditor
                         xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
-                        FontFamily="/resources/#Cascadia Code"
+                        FontFamily="/Resources/#Cascadia Code"
                         Name="DisassemblyEditor"
                         IsReadOnly="True"
                         Background="#222222"
