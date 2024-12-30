@@ -1,14 +1,12 @@
 ﻿/*
-	GMS2_Decompiler_FIXED_UA
+	Export2YYMPS_UA.csx
+		Original Decompiler by loypoll
+			Modified to a YYMPS Decompiler by burnedpopcorn180
+			
+	This Script decompiles any part of a game into a YYMPS package
+	which then can be imported into any other project
 	
-	Original Decompiler by loypoll
-	Fixed and Improved by burnedpopcorn180
-	
-	Improvements include:
-	  - Start-up Greetings and Credits Pop-Up
-	  - Sprites and TileSets that have no associated image attached to them no longer 
-			throw an exception, and will still allow decompilation to finish
-	  - Lists any encountered null sprite/tileset in the error text log
+	This Script currently has issues, but works for the most part
 	
 	NOTE THAT THIS IS THE UNDERANALYZER VERSION
 */
@@ -34,9 +32,23 @@ using System.Xml.Serialization;
 using Underanalyzer.Decompiler;
 using Underanalyzer;
 using UndertaleModTool;
+// For Enum Extraction
+using Underanalyzer.Decompiler.AST;
+using Underanalyzer.Decompiler.GameSpecific;
+using Underanalyzer.Decompiler.ControlFlow;
+using System.Collections.Generic;
+// for YYMPS Compression
+using System.IO.Compression;
 
 // PROMOTION!
-ScriptMessage("Welcome to the GMS2 Decompiler FIXED!\n\nOriginally made by loypoll\nFixed and Improved by burnedpopcorn180\n\n---UnderAnalyzer Version---");
+ScriptMessage("Welcome to Export2YYMPS.csx!\n\nOriginal GMS2 Decompiler made by loypoll\nYYMPS Exporter by burnedpopcorn180\n\n        ---UnderAnalyzer Version---");
+
+// DO NOT DECLARE ENUMS FOR THE LOVE OF ALL THAT IS HOLY
+if (Data.ToolInfo.DecompilerSettings.CreateEnumDeclarations == true) {
+	if (!ScriptQuestion("The 'Create Enum Declarations' Setting is ENABLED\nDecompiling with this Enabled will almost certainly break any code\n\nContinue Anyways?")) {
+		return;
+	}
+}
 
 // configuration
 var ignore = new List<string>() // ignore certain assets from attempting to decompile
@@ -45,7 +57,7 @@ var ignore = new List<string>() // ignore certain assets from attempting to deco
 };
 bool skipErrors;
 string dataPath = $"{Path.GetDirectoryName(FilePath)}\\";
-string rootPath = $"{dataPath}Export_Data\\";
+string rootPath = $"{dataPath}temp_dir\\";
 
 // ensure the user isn't retarded
 EnsureDataLoaded();
@@ -184,68 +196,6 @@ public class GMIncludedFile : ResourceBase
 
 	public long CopyToMask { get; set; } = -1L; // target platforms
 	public string filePath { get; set; } = "datafiles";
-}
-public class GMMainOptions : ResourceBase
-{
-	public GMMainOptions()
-	{
-		resourceVersion = "1.4";
-		name = "Main";
-	}
-	public string option_gameguid { get; set; } = Guid.NewGuid().ToString();
-	public string option_gameid { get; set; } = "0";
-	public int option_game_speed { get; set; } = 60;
-	public bool option_mips_for_3d_textures { get; set; }
-	public uint option_draw_colour { get; set; } = uint.MaxValue;
-	public uint option_window_colour { get; set; } = 255U;
-	public string option_steam_app_id { get; set; } = "0";
-	public bool option_sci_usesci { get; set; } // source control
-	public string option_author { get; set; } = "";
-	public bool option_collision_compatibility { get; set; }
-	public bool option_copy_on_write_enabled { get; set; }
-	public string option_lastchanged { get; set; } = "";
-	public bool option_spine_licence { get; set; }
-	public string option_template_image { get; set; } = "${base_options_dir}/main/template_image.png";
-	public string option_template_icon { get; set; } = "${base_options_dir}/main/template_icon.png";
-	public string option_template_description { get; set; }
-}
-public class GMWindowsOptions : ResourceBase
-{
-	public GMWindowsOptions()
-	{
-		resourceVersion = "1.1";
-		name = "Windows";
-	}
-	public string option_windows_display_name { get; set; } = "Created with GameMaker";
-	public string option_windows_executable_name { get; set; } = "${project_name}.exe";
-	public string option_windows_version { get; set; } = "1.0.0.0";
-	public string option_windows_company_info { get; set; } = "YoYo Games Ltd";
-	public string option_windows_product_info { get; set; } = "Created with GameMaker";
-	public string option_windows_copyright_info { get; set; } = "";
-	public string option_windows_description_info { get; set; } = "A GameMaker Game";
-	public bool option_windows_display_cursor { get; set; } = true;
-	public string option_windows_icon { get; set; } = "${base_options_dir}/windows/icons/icon.ico";
-	public int option_windows_save_location { get; set; } = 0;
-	public string option_windows_splash_screen { get; set; } = "${base_options_dir}/windows/splash/splash.png";
-	public bool option_windows_use_splash { get; set; }
-	public bool option_windows_start_fullscreen { get; set; }
-	public bool option_windows_allow_fullscreen_switching { get; set; }
-	public bool option_windows_interpolate_pixels { get; set; }
-	public bool option_windows_vsync { get; set; }
-	public bool option_windows_resize_window { get; set; }
-	public bool option_windows_borderless { get; set; }
-	public int option_windows_scale { get; set; }
-	public bool option_windows_copy_exe_to_dest { get; set; }
-	public int option_windows_sleep_margin { get; set; } = 10;
-	public string option_windows_texture_page { get; set; } = "2048x2048";
-	public string option_windows_installer_finished { get; set; } = "${base_options_dir}/windows/installer/finished.bmp";
-	public string option_windows_installer_header { get; set; } = "${base_options_dir}/windows/installer/header.bmp";
-	public string option_windows_license { get; set; } = "${base_options_dir}/windows/installer/license.txt";
-	public string option_windows_nsis_file { get; set; } = "${base_options_dir}/windows/installer/nsis_script.nsi";
-	public bool option_windows_enable_steam { get; set; }
-	public bool option_windows_disable_sandbox { get; set; }
-	public bool option_windows_steam_use_alternative_launcher { get; set; }
-	public bool option_windows_use_x64 { get; set; } = true;
 }
 public class Point
 {
@@ -1050,6 +1000,39 @@ public Bitmap Base64ToBitmap()
     }
 }
 
+// source/author: https://stackoverflow.com/a/5427121/826308
+// thanks bro
+// cemerson update 20181226
+public static class Prompt
+    {
+        public static string ShowDialog(string text, string caption, string defaultInputText = "")
+        {
+            Form prompt = new Form()
+            {
+                Width = 500,
+                Height = 150,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                Text = caption,
+                StartPosition = FormStartPosition.CenterScreen                    
+            };
+            Label textLabel = new Label() { Left = 50, Top = 20, Text = text };
+            TextBox textBox = new TextBox() { Left = 50, Top = 50, Width = 400 , Text = defaultInputText};
+            Button confirmation = new Button() { Text = "OK", Left = 350, Width = 100, Top = 70, DialogResult = DialogResult.OK };
+            confirmation.Click += (sender, e) => { prompt.Close(); };
+            prompt.Controls.Add(textBox);
+            prompt.Controls.Add(confirmation);
+            prompt.Controls.Add(textLabel);
+            prompt.AcceptButton = confirmation;
+
+            return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
+        }
+
+        internal static string ShowDialog(object filenamePrompt, string v)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
 #endregion
 #region GMS2 Asset Dumpers
 
@@ -1063,121 +1046,6 @@ void AddResource(IdReference resource)
 
 	if (!exportData.resources.Any(i => i.id.name == res.id.name))
 		exportData.resources.Add(res);
-}
-void DumpOptions()
-{
-	string optionsPath = "options/";
-	string mainOptionsPath = optionsPath + "main/";
-	Directory.CreateDirectory(rootPath + mainOptionsPath);
-
-	// make main options
-	var exportMainOptions = new GMMainOptions();
-	exportMainOptions.option_gameid = Data.GeneralInfo.GameID.ToString();
-	exportMainOptions.option_game_speed = (int)Data.GeneralInfo.GMS2FPS;
-	exportMainOptions.option_window_colour = (uint)Data.Options.WindowColor;
-	exportMainOptions.option_steam_app_id = Data.GeneralInfo.SteamAppID.ToString();
-	exportMainOptions.option_collision_compatibility = (Data.Options.Info.HasFlag(UndertaleOptions.OptionsFlags.FastCollisionCompatibility) || !(Data.IsVersionAtLeast(2022, 1)));
-	exportMainOptions.option_copy_on_write_enabled = (Data.Options.Info.HasFlag(UndertaleOptions.OptionsFlags.WriteErrors) || !(Data.IsVersionAtLeast(2022, 2)));
-							// unsure ^
-
-	// make windows options
-	string windowsOptionsPath = optionsPath + "windows/";
-	Directory.CreateDirectory(rootPath + windowsOptionsPath);
-
-	var exportWindowsOptions = new GMWindowsOptions();
-	exportWindowsOptions.option_windows_display_name = Data.GeneralInfo.DisplayName.Content;
-	exportWindowsOptions.option_windows_copyright_info = "Decompiler script by loypoll";
-
-	exportWindowsOptions.option_windows_start_fullscreen = (Data.Options.Info.HasFlag(UndertaleOptions.OptionsFlags.FullScreen));
-	exportWindowsOptions.option_windows_interpolate_pixels = (Data.Options.Info.HasFlag(UndertaleOptions.OptionsFlags.InterpolatePixels));
-	exportWindowsOptions.option_windows_borderless = (Data.GeneralInfo.Info.HasFlag(UndertaleGeneralInfo.InfoFlags.BorderlessWindow));
-	exportWindowsOptions.option_windows_display_cursor = (Data.Options.Info.HasFlag(UndertaleOptions.OptionsFlags.ShowCursor));
-	exportWindowsOptions.option_windows_resize_window = (Data.Options.Info.HasFlag(UndertaleOptions.OptionsFlags.Sizeable));
-	exportWindowsOptions.option_windows_disable_sandbox = (Data.Options.Info.HasFlag(UndertaleOptions.OptionsFlags.DisableSandbox));
-	exportWindowsOptions.option_windows_vsync = (Data.GeneralInfo.Info.HasFlag(UndertaleGeneralInfo.InfoFlags.SyncVertex1));
-	exportWindowsOptions.option_windows_allow_fullscreen_switching = (Data.GeneralInfo.Info.HasFlag(UndertaleGeneralInfo.InfoFlags.ScreenKey));
-	exportWindowsOptions.option_windows_enable_steam = (Data.GeneralInfo.Info.HasFlag(UndertaleGeneralInfo.InfoFlags.SteamEnabled));
-	if (!Data.GeneralInfo.Info.HasFlag(UndertaleGeneralInfo.InfoFlags.Scale))
-		exportWindowsOptions.option_windows_scale = 1;
-	if (Data.GeneralInfo.Info.HasFlag(UndertaleGeneralInfo.InfoFlags.LocalDataEnabled))
-		exportWindowsOptions.option_windows_save_location = 1;
-
-	// use runner
-	string runnerExePath = dataPath + Data.GeneralInfo.FileName.Content + ".exe";
-	if (!File.Exists(runnerExePath))
-	{
-		// go through every executable trying to look for a runner.
-		foreach (var f in Directory.GetFiles(dataPath, "*.exe", SearchOption.TopDirectoryOnly))
-		{
-			var lastLine = File.ReadLines(f).Last();
-			if (lastLine.Contains("YoYoGames.GameMaker.Runner"))
-				runnerExePath = f;
-		}
-	}
-	if (File.Exists(runnerExePath))
-	{
-		var vinfo = FileVersionInfo.GetVersionInfo(runnerExePath);
-		if (vinfo.ProductName != null)
-		{
-			// assume nothing's there if product name is null.
-			exportWindowsOptions.option_windows_product_info = vinfo.ProductName;
-			exportWindowsOptions.option_windows_company_info = vinfo.CompanyName;
-			exportWindowsOptions.option_windows_description_info = vinfo.FileDescription;
-			exportWindowsOptions.option_windows_copyright_info = vinfo.LegalCopyright;
-			exportWindowsOptions.option_windows_version = vinfo.FileVersion;
-		}
-
-		// extract the icon from the exe
-		var iconExport = getIcon(runnerExePath);
-		if (iconExport != null)
-		{
-			string iconPath = rootPath + windowsOptionsPath + "icons/";
-			exportWindowsOptions.option_windows_icon = "icons/icon.ico";
-
-			Directory.CreateDirectory(iconPath);
-			using (var stream = new FileStream($"{iconPath}icon.ico", FileMode.Create))
-				iconExport.Save(stream);
-
-			/*
-			using (var stream = new FileStream($"{iconPath}readme.txt", FileMode.Create))
-			{
-				byte[] info = Encoding.Default.GetBytes("I did my very best at extracting the icon.\nIf it came out horrible, just use Resource Hacker.");
-				stream.Write(info, 0, info.Length);
-			}
-			*/
-		}
-	}
-
-	// splash
-	string splashPath = dataPath + "splash.png";
-	if (File.Exists(splashPath))
-	{
-		Directory.CreateDirectory(rootPath + windowsOptionsPath + "splash");
-		File.Copy(splashPath, rootPath + windowsOptionsPath + "splash/splash.png", true);
-
-		exportWindowsOptions.option_windows_splash_screen = "splash/splash.png";
-		exportWindowsOptions.option_windows_use_splash = true;
-	}
-
-	// constants
-	foreach (var i in Data.Options.Constants)
-	{
-		if (i.Name.Content == "@@DrawColour")
-			exportMainOptions.option_draw_colour = UInt32.Parse(i.Value.Content);
-		if (i.Name.Content == "@@SleepMargin")
-			exportWindowsOptions.option_windows_sleep_margin = Int32.Parse(i.Value.Content);
-	}
-
-	// jumpscare the user with funny image
-	byte[] custom_project_image = System.Convert.FromBase64String("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pE3detKYPUSXbcxkalBtntt83i4k7qebApW/9NJLzLbT9tW5Va0LjKaJpj0zkBmlcUUsrIoKUac9PuCCOUas5yc+mdbC3tRE5qPCoupa63LOHSdy14LE5S9TN2nd1Opu1CKXyh+SY+kgi6k2RU/RVffsDAbl24xl40j0sbKmcZ02Z3qhpIteBWzt6C6HWeRgMKQWxiLLNK95HvbClJwNHPHgVtuIq/zpp59O24/AbcxhZGHUrfuf3nAwGDGBMafhNVS4IMU7N81nZw+5ImPYbLpCxdy8niB/I0sn+oMKLOaBSFHdnIbEOakUsMQhveYHPiKonKPYePSSEP06tQp79STx7t27j919jEkiF4H79+/fu3fP7sG9wAqKN0z4hsMhduNkSlc+DpBpHX+QNJcclwOq3LlBrWNYWRJN6xmwvqQ14E5U91dynPyiOSdanE0fnj2wO6vcpPKjFUre0Txbmds0mopxe2qfiSsIsonL8BZQ3VR+SIk76+q5FWRN1sjlySeffPOb34zQUemf3njjtf97DeNagc1d5UpLYeTO/W4SeqZ2E7siehYhjsXBVe7ciNaRd/qgGhiIPqXQt1nscZaVkD0XuitC4mfjsyyW2x7G3uly840LUDuxiT7PZpPMoRvxVnVuIHV/kEBZezS5+yR5JDar57bAuET0J554AukiVcL566//aTwe287M7EuU4/YqRnTfxw655zgTviJHUrlzVK0jTRlOt536RMIDMy5g+uJfxLVS2FQq5MbKHwejemXZLhwwHI3wF16jPr394x//eP/BfYss7Nxodvdj8l1Wyt22o9aj4kctEcSU4XBAhCZNAAFT6o5+pssub7nIlZLujzLbK3JUlTtH0jrBQc/57LMIm39biLA3xXh92r+0OUI/OztD69kNT7InRUaj07e85S2PP/YYm0j8tddeu/fGG9j9Mptvc+juWtendEIHTOxTN7svKY7ce7ueA8WBkPYyrI9lOLgBlTvH0Dqd595mOBwx92DSwMxEs2R0rBCBA/T9REursOYtugEtfiiRDMu8hXB+enpK+sGDB2+8cY9bVduz2/JFfzlH9BSsH68UYOqLEt+HjWM5lvluTOXOwbVOKEGj/sCKuxim1y50N7s+y5TGWbSpm525f8zskJkMy/mAKYC0fbWOGTy7UsXtrDhrd+FgK+4kXw4Pfn355Zd1mb9B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");
-	File.WriteAllBytes(rootPath + "options/main/template_icon.png", custom_project_image);
-	exportMainOptions.option_template_icon = "template_icon.png";
-
-	// export and add to data
-	doJson(exportMainOptions, mainOptionsPath + "options_main.yy");
-	doJson(exportWindowsOptions, windowsOptionsPath + "options_windows.yy");
-	exportData.Options.Add(new IdReference { name = exportMainOptions.name, path = mainOptionsPath + "options_main.yy" });
-	exportData.Options.Add(new IdReference { name = exportWindowsOptions.name, path = windowsOptionsPath + "options_windows.yy" });
 }
 
 void DumpSprite(UndertaleSprite sprite)
@@ -1211,17 +1079,29 @@ void DumpSprite(UndertaleSprite sprite)
 	// burned here
 	// try + catch to detect sprites with no image
 	// and to avoid an exception
+	Bitmap nullimg;
 	try {
-	if (sprite.Textures.Count > 0)
-	{
-		exportedSprite.width = (int)sprite.Textures[0].Texture.BoundingWidth;
-		exportedSprite.height = (int)sprite.Textures[0].Texture.BoundingHeight;
-	}
+		if (sprite.Textures.Count > 0)
+		{
+			exportedSprite.width = (int)sprite.Textures[0].Texture.BoundingWidth;
+			exportedSprite.height = (int)sprite.Textures[0].Texture.BoundingHeight;
+		}
 	}
 	catch (Exception e) {
-	// if no image with sprite, set to 0
-		exportedSprite.width = 0;
-		exportedSprite.height = 0;
+	// if no image with sprite
+		exportedSprite.width = 1;
+		exportedSprite.height = 1;
+		
+		// make blank 1x1 image
+		
+		string _compositeGuid = Guid.NewGuid().ToString();
+		string lGuid = Guid.NewGuid().ToString();
+		string lPath = rootPath + spritePath + "layers/" + _compositeGuid + "/";
+		Directory.CreateDirectory(lPath);
+		
+		nullimg = new Bitmap(exportedSprite.width, exportedSprite.height);
+		TextureWorker.SaveImageToFile(rootPath + spritePath + _compositeGuid + ".png", nullimg, false);
+		TextureWorker.SaveImageToFile(lPath + lGuid + ".png", nullimg);
 		
 		// Log Null Sprite
 		errorList.Add($"{exportedSprite.name} - Null Sprite: No associated Image found");
@@ -1772,7 +1652,15 @@ void DumpRoom(UndertaleRoom room)
 									imageSpeed = i.ImageSpeed,
 									imageIndex = i.ImageIndex
 								};
-								string objname = i.ObjectDefinition.Name.Content;
+								
+								// string objname = i.ObjectDefinition.Name.Content;
+								
+								string objname = "";
+								try {
+								objname = i.ObjectDefinition.Name.Content;
+								} catch {
+								errorList.Add($"{exportedRoom.name} - Empty Object Instance (inst_{i.InstanceID}) was found in Room");
+								}
 								
 								// dump creation code
 								string code = "";
@@ -2564,19 +2452,6 @@ void DumpTileset(UndertaleBackground bg)
 		{
 			name = tgrp,
 			path = $"texturegroups/{tgrp}"
-		};
-	}
-
-	// finish
-	if (_APND.Checked)
-		exportedSprite.parent = APNDREF;
-	else
-	{
-		addFolder(newFolderName, $"Sprites/{newFolderName}", Data.Sprites.Count);
-		exportedSprite.parent = new IdReference
-		{
-			name = newFolderName,
-			path = $"folders/Sprites/{newFolderName}.yy"
 		};
 	}
 
@@ -3747,7 +3622,7 @@ async Task DumpScripts()
 			Directory.CreateDirectory(rootPath + scriptPath);
 
 			// finish
-			File.WriteAllText(rootPath + scriptPath + globalinit.name + ".gml", "// Script generated by loypoll's decompiler\n" + code);
+			File.WriteAllText(rootPath + scriptPath + globalinit.name + ".gml", code);
 
 			doJson(globalinit, scriptPath + $"{globalinit.name}.yy");
 			AddResource(new IdReference
@@ -4198,7 +4073,7 @@ void addFolder(string n)
 
 // I am so sorry for this
 bool DUMP, GMS1, TWEK, COMP; // TWEK - code tweaks, COMP - comparison mode
-bool OPTN, OBJT, ROOM, EXTN, SCPT, TMLN, SOND, SHDR, PATH, ACRV, SEQN, FONT, SPRT, BGND;
+bool OBJT, ROOM, EXTN, SCPT, TMLN, SOND, SHDR, PATH, ACRV, SEQN, FONT, SPRT, BGND;
 List<string> CSTM = new List<string>();
 
 //COMP = true;
@@ -4207,7 +4082,7 @@ var tooltip = new ToolTip();
 Form FORM = new Form()
 {
 	AutoSize = true,
-	Text = "Decompiler",
+	Text = "Export2YYMPS",
 	MaximizeBox = false,
 	MinimizeBox = false,
 	StartPosition = FormStartPosition.CenterScreen,
@@ -4215,7 +4090,10 @@ Form FORM = new Form()
 };
 FORM.Controls.Add(new Label()
 {
-	Text = "Warning: Decompiling with UTMT is an unreliable process.\nSometimes specific code snippets enter an infinite loop of decompilation and freeze the script until you kill the task.\nAnd since you're decompiling a lot of code at once, it has way more chances of happening, so proceed at your own risk.",
+	Text = @"Note: This Script defaults to using the Asset Picker, which allows you to individually include certain assets to the YYMPS
+To include entire asset sections, toggle the ""Pick Assets"" button and select the asset sections you want to include
+Rememeber that this does mean you can't combine both",
+
 	AutoSize = true,
 	Location = new System.Drawing.Point(8, 8),
 });
@@ -4227,13 +4105,14 @@ FORM.Controls.Add(new Label()
 	Font = new Font(Label.DefaultFont, FontStyle.Bold)
 });
 
-var _OPTN = new CheckBox()
+// moved up here cuz yeah
+var _PJCT = new CheckBox()
 {
 	Location = new System.Drawing.Point(16 + (120 * 0), 100 + (32 * 0)),
-	Text = "Options",
+	Text = "Project File",
 	Checked = true
 };
-FORM.Controls.Add(_OPTN);
+FORM.Controls.Add(_PJCT);
 
 var _OBJT = new CheckBox()
 {
@@ -4351,14 +4230,6 @@ var _BGND = new CheckBox()
 };
 FORM.Controls.Add(_BGND);
 
-var _PJCT = new CheckBox()
-{
-	Location = new System.Drawing.Point(16 + (120 * 2), 100 + (32 * 2)),
-	Text = "Project File",
-	Checked = true
-};
-FORM.Controls.Add(_PJCT);
-
 // custom
 var _CSTM = new CheckBox()
 {
@@ -4366,6 +4237,15 @@ var _CSTM = new CheckBox()
 	Text = "Pick Assets",
 	AutoSize = true
 };
+
+// disable turning off Project File, because it is necessary
+_PJCT.Enabled = false;
+
+// setup for initial load
+_OBJT.Enabled = _ROOM.Enabled = _EXTN.Enabled = _SCPT.Enabled = _TMLN.Enabled = _SOND.Enabled = _SHDR.Enabled = _PATH.Enabled = _ACRV.Enabled = _SEQN.Enabled = _FONT.Enabled = _SPRT.Enabled = _BGND.Enabled = false;
+_OBJT.Checked = _ROOM.Checked = _EXTN.Checked = _SCPT.Checked = _TMLN.Checked = _SOND.Checked = _SHDR.Checked = _PATH.Checked = _ACRV.Checked = _SEQN.Checked = _FONT.Checked = _SPRT.Checked = _BGND.Checked = false;
+_CSTM.Checked = true;
+
 _CSTM.CheckedChanged += (o, e) =>
 {
 	if (_CSTM.Checked)
@@ -4392,10 +4272,11 @@ tooltip.SetToolTip(_CSTM, "Individually pick one by one\nwhich resources you wan
 var _CMBT = new Button()
 {
 	Location = new System.Drawing.Point(16 + (120 * 1) + 92, 228 + (24 * 0) - 4),
-	Text = "Change...",
+	Text = "Pick Individual Assets...",
 	AutoSize = true,
-	Enabled = false
+	Enabled = true // Just to default to unlocked
 };
+
 _CMBT.Click += (o, e) =>
 {
 	// make custom form
@@ -4672,7 +4553,7 @@ FORM.Controls.Add(_CMBT);
 // settings
 FORM.Controls.Add(new Label()
 {
-	Text = "Decompiler settings",
+	Text = "Decompiler Settings",
 	AutoSize = true,
 	Location = new System.Drawing.Point(8, 200),
 	Font = new Font(Label.DefaultFont, FontStyle.Bold)
@@ -4698,12 +4579,10 @@ _APND.CheckedChanged += (o, s) =>
 {
 	if (_APND.Checked)
 	{
-		_OPTN.Enabled = _OPTN.Checked = false;
 		_PJCT.Enabled = _PJCT.Checked = false;
 	}
 	else
 	{
-		_OPTN.Enabled = true;
 		_PJCT.Enabled = true;
 	}
 };
@@ -4830,7 +4709,6 @@ OKBT.Click += (o, s) =>
 	GMS1 = false;
 	TWEK = _TWEK.Checked;
 
-	OPTN = _OPTN.Checked;
 	OBJT = _OBJT.Checked;
 	ROOM = _ROOM.Checked;
 	EXTN = _EXTN.Checked;
@@ -4869,32 +4747,52 @@ if (!GMS1)
 {
 	// prepare project file
 	if (exportData == null)
-	{
+	{	
+		// if dumbass disables Project File
+		if (!_PJCT.Checked && !_APND.Checked) {
+			ScriptMessage("The Project File is necessary to Export a YYMPS Package\nRun the Script again, and DON'T Disable it, dummy");
+			return;
+		}
+	
+		// YYMPS ONLY Type shit
+		string pkgName = Prompt.ShowDialog("Put YYMPS Name", "Input YYMPS Filename", "GenericName");
+		string pkgID = Prompt.ShowDialog("Put YYMPS ID", "Input YYMPS ID", "generic_name");
+		string pkgVer = Prompt.ShowDialog("Put Version", "Input YYMPS Version", "1.0.0");
+	
 		exportData = new GMProject
 		{
-			name = Data.GeneralInfo.Name.Content,
+			name = pkgID,
 			isEcma = (Data.GeneralInfo.Info.HasFlag(UndertaleGeneralInfo.InfoFlags.JavaScriptMode))
 		};
-		exportData.MetaData.Add("IDEVersion", "2023.1.0.0");
-
-		// add default folders
-		addFolder("Sprites");
-		addFolder("Tile Sets");
-		addFolder("Sounds");
-		addFolder("Paths");
-		addFolder("Scripts");
-		addFolder("Shaders");
-		addFolder("Fonts");
-		addFolder("Timelines");
-		addFolder("Objects");
-		addFolder("Rooms");
+		
+		// im surprised this wasn't in the original script
+		exportData.MetaData.Add("IDEVersion", $"{Data.GeneralInfo.Major}.{Data.GeneralInfo.Minor}");//"2023.1.0.0");
+		// YYMPS ONLY Metadata
+		exportData.MetaData.Add("PackageType", "Asset");
+		exportData.MetaData.Add("PackageName", $"{pkgName}");
+		exportData.MetaData.Add("PackageID", $"{pkgID}");
+		exportData.MetaData.Add("PackagePublisher", "YYMPS by Export2YYMPS");
+		exportData.MetaData.Add("PackageVersion", $"{pkgVer}");
+		
+		// For MetaData.JSON
+		string metadatapath = rootPath + "metadata.json";
+		
+		using (StreamWriter writer = new StreamWriter(metadatapath))
 		{
-			addFolder("Sequences");
-			addFolder("Animation Curves");
+			writer.WriteLine("{ ");
+			writer.WriteLine(@$"  ""package_id"": ""{pkgID}"",");
+			writer.WriteLine(@$"  ""display_name"": ""{pkgName}"",");
+			writer.WriteLine(@$"  ""version"": ""{pkgVer}"",");
+			writer.WriteLine(@$"  ""package_type"": ""asset"",");
+			writer.WriteLine(@$"  ""ide_version"": ""{Data.GeneralInfo.Major}.{Data.GeneralInfo.Minor}""");
+			writer.WriteLine("}");
 		}
-		addFolder("Notes");
-		addFolder("Extensions");
-			exportData.TextureGroups.Add(new GMTextureGroup());
+		
+		// add YYMPS Folder in YYP
+		addFolder($"{pkgName}");
+		
+		// back to normal stuffs
+		exportData.TextureGroups.Add(new GMTextureGroup());
 
 		if (SOND && Data.AudioGroups != null)
 		{
@@ -4903,6 +4801,7 @@ if (!GMS1)
 		}
 		else
 			exportData.AudioGroups.Add(new GMAudioGroup());
+			
 	}
 	else
 	{
@@ -4922,9 +4821,6 @@ if (!GMS1)
 	}
 
 	// resource dumps
-	if (OPTN)
-		DumpOptions();
-
 	if (OBJT || CSTM.Count > 0)
 	{
 		SetupProgress("Objects", 0, Data.GameObjects.Count);
@@ -5026,68 +4922,10 @@ if (!GMS1)
 		await DumpTilesets();
 	}
 
-	if (_PJCT.Checked && SCPT)
-	{
-		// add warning note
-		var note = new GMNotes()
-		{
-			name = "readme",
-			parent = new IdReference()
-			{
-				name = "Notes",
-				path = "folders/Notes.yy"
-			}
-		};
-		string notePath = $"notes/{note.name}/";
-		Directory.CreateDirectory(rootPath + notePath);
-
-		var str = @"As a warning, neither this decompiler nor even UTMT can be perfect.
-There's likely gonna be some stuff you're gonna have to fix on your own.
-
-Most notably asset indices. GameMaker stores assets referenced in the code as just numbers,
-and the decompiler would have to GUESS which variables are for assets and which aren't.
-
-If the game runner had an icon, you should use Resource Hacker to get it.
-The script isn't exactly good at that either.
-";
-
-		if (Directory.Exists($"{dataPath}code"))
-			str += $"\nAny .gml files that were in the \"code\" folder ({dataPath}\\code) were used.\nIf you don't want this, rename the folder before re-running the script.";
-		else if (Data.IsVersionAtLeast(2, 3))
-			str += "\nAlso since this game is made in GM2.3+, some of the code probably failed to decompile.\nI can't do anything about this, it's UTMT's fault. Just fix it yourself.\n";
-
-		File.WriteAllText(rootPath + $"{notePath}{note.name}.txt", str);
-		doJson(note, $"{notePath}/{note.name}.yy");
-		AddResource(new IdReference
-		{
-			name = note.name,
-			path = $"{notePath}{note.name}.yy"
-		});
-	}
-
 	// export final yyp
 	if (_PJCT.Checked || _APND.Checked)
 		doJson(exportData, $"{exportData.name}.yyp");
 }
-
-#endregion
-#region Dump GMS1
-
-else
-{
-	if (SPRT || CSTM.Count > 0)
-	{
-		SetupProgress("Sprites", 0, Data.Sprites.Count);
-		await DumpSprites();
-	}
-
-	// export final project gmx
-	/*
-	if (_PJCT.Checked || _APND.Checked)
-		DumpProjectGMS1();
-	*/
-}
-
 #endregion
 
 // cleanup
@@ -5095,14 +4933,54 @@ await StopUpdater();
 worker.Cleanup();
 HideProgressBar();
 
-// done
+// Make final YYMPS directory
+string yympsPath = $"{dataPath}Export_YYMPS\\";
+Directory.CreateDirectory(yympsPath);
+
+// YYMPS Compression
+string startPath = rootPath;
+string zipPath = yympsPath + $"{exportData.name}.yymps";
+
+// if previous yymps exists with the same name, DELETE IT OFF THE FACE OF THE EARTH
+if(File.Exists(zipPath))
+    File.Delete(zipPath);
+	
+		
+async Task createyymps() {
+
+// Compress to YYMPS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ZipFile.CreateFromDirectory(startPath, zipPath);
+
+// delete temp directory workspace
+// its this fucked up because sometimes it fails to delete it
+// when sounds are included, as sounds take more time to decompile
+// and it attempts to delete the temp folder while still decompiling, which causes it to shit itself
+// so this indefinitely attempts to delete it, and will eventually succeed when everything is done
+// and will leave infinite loop when it has succeed, because duh
+while (true)
+{
+	try 
+	{
+		System.IO.Directory.Delete(rootPath, true);
+		if (Directory.Exists(rootPath) == false)
+			break;
+	} 
+	catch {}
+	}
+}
+
+// to wait for yymps creation to fully finish
+await createyymps();
+	
+// Completely Done with Decompiling
 if (errorList.Count > 0)
 {
-	File.WriteAllLinesAsync(dataPath + "error_log.txt", errorList);
-	ScriptMessage($"Done with {errorList.Count} errors.\n{rootPath}\n\nA text file can be found in the data folder with logged exception messages for each error.");
+	File.WriteAllLinesAsync(yympsPath + "error_log.txt", errorList);
+	ScriptMessage($"Done with {errorList.Count} errors.\n{rootPath}error_log.txt\n\nA text file can be found in the data folder with logged exception messages for each error.");
 }
 else
-	ScriptMessage("Done!" + (_PJCT.Checked ? " Remember to copy any necessary files into the \"datafiles\" folder." : ""));
+	ScriptMessage("Done!\nThe YYMPS Package should finish Compressing after this Message\nPress OK to go to the Exported YYMPS");
 
+// Open File Explorer to the YYMPS Directory
 if (!_APND.Checked)
-	Process.Start("explorer.exe", rootPath); // pray that this works
+	Process.Start("explorer.exe", yympsPath);
